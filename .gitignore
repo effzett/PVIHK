@@ -1,0 +1,19 @@
+# Build output
+build/
+
+# IDE
+.idea/
+*.iml
+
+# Bytecode
+__pycache__/
+*.py[cod]
+
+# Umgebungen
+.venv
+env/
+venv/
+
+# System
+.DS_Store
+
