@@ -27,8 +27,10 @@ Section "Installieren"
   # Startmenüordner anlegen
   CreateDirectory "$SMPROGRAMS\\pvihk"
 
+  SetShellVarContext current
+
   # Startmenü-Verknüpfung zur Anwendung
-  CreateShortCut "$SMPROGRAMS\\pvihk\\pvihk.lnk" "$INSTDIR\\pvihk.exe"
+  CreateShortCut "$SMPROGRAMS\\pvihk\\pvihk.lnk" "$INSTDIR\\pvihk.exe" "" "$INSTDIR\\pvihk.exe" 0
 
   # Startmenü-Verknüpfung zum Deinstallieren
   CreateShortCut "$SMPROGRAMS\\pvihk\\Deinstallieren.lnk" "$INSTDIR\\Uninstall.exe"
