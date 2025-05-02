@@ -1,4 +1,4 @@
-name: Build Windows EXE via Conda + PyInstaller
+name: Build Windows EXE via pip PyInstaller
 
 on:
   workflow_dispatch:
@@ -19,9 +19,9 @@ jobs:
           auto-update-conda: true
           channels: conda-forge,defaults
 
-      - name: Install pip-only packages
+      - name: Install pip packages
         run: |
-          pip install fpdf==1.7.2
+          pip install pyinstaller fpdf==1.7.2
 
       - name: Find pulp path
         id: find_pulp
@@ -34,9 +34,11 @@ jobs:
         shell: bash -l {0}
         run: |
           pyinstaller \
+            --clean \
             --noconfirm \
             --onefile \
             --windowed \
+            --log-level=DEBUG \
             --icon=PVIHK.ico \
             --hidden-import=pulp \
             --add-data "${{ steps.find_pulp.outputs.pulp-path }};pulp" \
@@ -44,7 +46,6 @@ jobs:
             --collect-data PySide6 \
             --distpath dist \
             pvihk.py
-
 
       - name: Check if EXE was built
         run: |
@@ -54,11 +55,8 @@ jobs:
           )
         shell: cmd
 
-
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: pvihk-exe
           path: dist/pvihk.exe
-
-
