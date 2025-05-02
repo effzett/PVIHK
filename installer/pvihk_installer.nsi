@@ -30,9 +30,10 @@ Section "Installieren"
   CreateShortCut "$SMPROGRAMS\\pvihk.lnk" "$INSTDIR\\pvihk.exe"
 SectionEnd
 
-Section "Deinstallieren"
+Section "Uninstall"
   Delete "$INSTDIR\\pvihk.exe"
   Delete "$INSTDIR\\Uninstall.exe"
   Delete "$SMPROGRAMS\\pvihk.lnk"
   RMDir "$INSTDIR"
 SectionEnd
+
