@@ -32,11 +32,18 @@ jobs:
 
       - name: Find cbc path
         id: find_cbc
-        shell: bash -l {0}
+        shell: python
         run: |
-          CBC_PATH=$(which cbc)
-          echo "cbc found at: $CBC_PATH"
-          echo "cbc-path=$CBC_PATH" >> $GITHUB_OUTPUT
+          import os
+          import sys
+          import shutil
+      
+          conda_prefix = os.environ.get("CONDA_PREFIX")
+          candidate = os.path.join(conda_prefix, "Library", "bin", "cbc.exe")
+          if not os.path.exists(candidate):
+              raise SystemExit(f"cbc not found at expected location: {candidate}")
+          print(f"::set-output name=cbc-path::{candidate}")
+
 
       - name: Build with PyInstaller
         shell: bash -l {0}
