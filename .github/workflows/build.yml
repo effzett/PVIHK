@@ -1,4 +1,4 @@
-name: Build Windows EXE via pip PyInstaller
+name: Build Windows EXE via PyInstaller
 
 on:
   workflow_dispatch:
@@ -19,9 +19,8 @@ jobs:
           auto-update-conda: true
           channels: conda-forge,defaults
 
-      - name: Install pip packages
-        run: |
-          pip install pyinstaller fpdf==1.7.2
+      - name: Install pip packages (Fallback)
+        run: pip install pyinstaller fpdf==1.7.2
 
       - name: Find pulp path
         id: find_pulp
@@ -30,23 +29,21 @@ jobs:
           echo pulp-path=%PULP_PATH% >> %GITHUB_OUTPUT%
         shell: cmd
 
-      - name: Find cbc path
-        id: find_cbc
+      - name: Copy cbc.exe and DLLs
         shell: bash -l {0}
         run: |
-          CBC_PATH="$CONDA_PREFIX/Library/bin/cbc.exe"
-          if [ ! -f "$CBC_PATH" ]; then
-            echo "cbc not found at $CBC_PATH"
-            exit 1
-          fi
-          echo "cbc-path=$CBC_PATH" >> $GITHUB_OUTPUT
-
-
+          mkdir -p assets
+          cp "$CONDA_PREFIX/Library/bin/cbc.exe" assets/
+          cp "$CONDA_PREFIX/Library/bin/"*.dll assets/
 
       - name: Build with PyInstaller
         shell: bash -l {0}
         run: |
-          pyinstaller \
+          binaries=""
+          for f in assets/*.dll assets/cbc.exe; do
+            binaries="$binaries --add-binary \"$f;.\""
+          done
+          eval pyinstaller \
             --clean \
             --noconfirm \
             --onefile \
@@ -56,7 +53,7 @@ jobs:
             --hidden-import=pulp \
             --add-data "${{ steps.find_pulp.outputs.pulp-path }};pulp" \
             --add-data "build_number.txt;." \
-            --add-binary "${{ steps.find_cbc.outputs.cbc-path }};." \
+            $binaries \
             --collect-submodules PySide6 \
             --collect-data PySide6 \
             --distpath dist \

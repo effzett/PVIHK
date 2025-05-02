@@ -14,7 +14,8 @@ dependencies:
   - qtwebchannel=6.7.3
   - qtwebengine=6.7.3
   - qtwebsockets=6.7.3
-  - cbc                     # ✅ Das CLI-Tool, das die `cbc.exe` liefert
+  - coin-or-cbc          # ersetzt "cbc" durch den stabilen Paketnamen
   - pip
   - pip:
       - fpdf==1.7.2
+      - pyinstaller
