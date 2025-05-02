@@ -19,31 +19,21 @@ jobs:
           auto-update-conda: true
           channels: conda-forge,defaults
 
-      - name: Install pip packages (Fallback)
-        run: pip install pyinstaller fpdf==1.7.2
+      - name: Install pip-only packages
+        run: |
+          pip install pyinstaller
 
       - name: Find pulp path
         id: find_pulp
+        shell: cmd
         run: |
           for /f "delims=" %%i in ('python -c "import pulp, os; print(os.path.dirname(pulp.__file__))"') do set "PULP_PATH=%%i"
-          echo pulp-path=%PULP_PATH% >> %GITHUB_OUTPUT%
-        shell: cmd
-
-      - name: Copy cbc.exe and DLLs
-        shell: bash -l {0}
-        run: |
-          mkdir -p assets
-          cp "$CONDA_PREFIX/Library/bin/cbc.exe" assets/
-          cp "$CONDA_PREFIX/Library/bin/"*.dll assets/
+          echo pulp-path=%%PULP_PATH%%>> %GITHUB_OUTPUT%
 
       - name: Build with PyInstaller
         shell: bash -l {0}
         run: |
-          binaries=""
-          for f in assets/*.dll assets/cbc.exe; do
-            binaries="$binaries --add-binary \"$f;.\""
-          done
-          eval pyinstaller \
+          pyinstaller \
             --clean \
             --noconfirm \
             --onefile \
@@ -53,19 +43,19 @@ jobs:
             --hidden-import=pulp \
             --add-data "${{ steps.find_pulp.outputs.pulp-path }};pulp" \
             --add-data "build_number.txt;." \
-            $binaries \
+            --add-binary "assets/cbc.exe;." \
             --collect-submodules PySide6 \
             --collect-data PySide6 \
             --distpath dist \
             pvihk.py
 
       - name: Check if EXE was built
+        shell: cmd
         run: |
           if not exist dist\pvihk.exe (
             echo Build failed: EXE not found.
             exit 1
           )
-        shell: cmd
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4

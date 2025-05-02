@@ -14,8 +14,6 @@ dependencies:
   - qtwebchannel=6.7.3
   - qtwebengine=6.7.3
   - qtwebsockets=6.7.3
-  - coin-or-cbc=2.10.10    # ✅ kompatibel mit zlib 1.2.x
   - pip
   - pip:
       - fpdf==1.7.2
-      - pyinstaller
