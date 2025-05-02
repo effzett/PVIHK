@@ -80,3 +80,13 @@ jobs:
             dist/pvihk_setup.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Installer to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.${{ env.BUILD_NUMBER }}
+          name: Release v1.0.${{ env.BUILD_NUMBER }}
+          body: Version 1.0.${{ env.BUILD_NUMBER }}
+          files: dist/pvihk_setup.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
