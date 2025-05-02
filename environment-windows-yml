@@ -1,0 +1,21 @@
+name: pvihk
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pyinstaller=6.7.0
+  - pyinstaller-hooks-contrib=2025.3
+  - pulp=2.8.0
+  - pyside6=6.7.2
+  - qtbase=6.7.3
+  - qtdeclarative=6.7.3
+  - qtshadertools=6.7.3
+  - qtsvg=6.7.3
+  - qttools=6.7.3
+  - qtwebchannel=6.7.3
+  - qtwebengine=6.7.3
+  - qtwebsockets=6.7.3
+  - pip
+  - pip:
+      - fpdf==1.7.2
