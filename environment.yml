@@ -93,4 +93,4 @@ dependencies:
   - zstd=1.5.6
   - pip:
       - fpdf==1.7.2
-prefix: /Users/internet/anaconda3/envs/pvihk
+
