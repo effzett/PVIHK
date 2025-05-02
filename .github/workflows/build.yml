@@ -43,10 +43,9 @@ jobs:
             --collect-data PySide6 \
             pvihk.py
 
-
       - name: Check if EXE was built
         run: |
-          if not exist dist\pvihk.exe (
+          if not exist build\pvihk\pvihk.exe (
             echo Build failed: EXE not found.
             exit 1
           )
@@ -56,4 +55,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pvihk-exe
-          path: dist/pvihk.exe
+          path: build/pvihk/pvihk.exe
+
