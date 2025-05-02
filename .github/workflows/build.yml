@@ -55,8 +55,12 @@ jobs:
             --distpath dist \
             pvihk.py
 
+      - name: Debug LICENSE exist
+        run: dir LICENSE.txt
+
       - name: Create NSIS Installer
         run: |
+          
           makensis installer/pvihk_installer.nsi
 
       - name: Check if EXEs were built
