@@ -30,6 +30,16 @@ jobs:
           echo pulp-path=%PULP_PATH% >> %GITHUB_OUTPUT%
         shell: cmd
 
+      - name: Find cbc path
+        id: find_cbc
+        shell: python
+        run: |
+          import shutil
+          path = shutil.which("cbc")
+          if not path:
+              raise SystemExit("cbc not found")
+          print(f"::set-output name=cbc-path::{path}")
+
       - name: Build with PyInstaller
         shell: bash -l {0}
         run: |
@@ -42,6 +52,8 @@ jobs:
             --icon=PVIHK.ico \
             --hidden-import=pulp \
             --add-data "${{ steps.find_pulp.outputs.pulp-path }};pulp" \
+            --add-data "build_number.txt;." \
+            --add-binary "${{ steps.find_cbc.outputs.cbc-path }};." \
             --collect-submodules PySide6 \
             --collect-data PySide6 \
             --distpath dist \
