@@ -5,8 +5,7 @@
 # Erstelle dist-Verzeichnis, falls es fehlt
 !system 'mkdir "${DIST_DIR}" >nul 2>&1'
 
-
-OutFile "dist\pvihk_setup.exe"
+OutFile "${ROOT_DIR}\\dist\\pvihk_setup.exe"
 InstallDir "$PROGRAMFILES64\\pvihk"
 RequestExecutionLevel admin
 
