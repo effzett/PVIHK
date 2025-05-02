@@ -12,7 +12,7 @@ Page instfiles
 UninstPage uninstConfirm
 UninstPage instfiles
 
-LicenseData "LICENSE.txt"
+LicenseData "..\\LICENSE.txt"
 
 Section "Installieren"
   SetOutPath "$INSTDIR"
