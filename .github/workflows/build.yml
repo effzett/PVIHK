@@ -25,10 +25,11 @@ jobs:
 
       - name: Find pulp path
         id: find_pulp
-        shell: cmd
+        shell: bash -l {0}
         run: |
-          for /f "delims=" %%i in ('python -c "import pulp, os; print(os.path.dirname(pulp.__file__))"') do set "PULP_PATH=%%i"
-          echo pulp-path=%%PULP_PATH%%>> %GITHUB_OUTPUT%
+          PULP_PATH=$(python -c "import pulp, os; print(os.path.dirname(pulp.__file__))")
+          echo "pulp-path=$PULP_PATH" >> $GITHUB_OUTPUT
+
 
       - name: Build with PyInstaller
         shell: bash -l {0}
