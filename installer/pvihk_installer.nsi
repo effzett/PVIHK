@@ -1,4 +1,11 @@
 # NSIS-Installer für pvihk
+!define ROOT_DIR ".."
+!define DIST_DIR "${ROOT_DIR}\\dist"
+
+# Erstelle dist-Verzeichnis, falls es fehlt
+!system 'mkdir "${DIST_DIR}" >nul 2>&1'
+
+
 OutFile "dist\pvihk_setup.exe"
 InstallDir "$PROGRAMFILES64\\pvihk"
 RequestExecutionLevel admin
@@ -16,7 +23,7 @@ LicenseData "..\\LICENSE.txt"
 
 Section "Installieren"
   SetOutPath "$INSTDIR"
-  File "dist\\pvihk.exe"
+  File "${DIST_DIR}\\pvihk.exe"
   WriteUninstaller "$INSTDIR\\Uninstall.exe"
 
   # Startmenü-Verknüpfung
