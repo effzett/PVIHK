@@ -32,13 +32,11 @@ jobs:
 
       - name: Find cbc path
         id: find_cbc
-        shell: python
+        shell: bash -l {0}
         run: |
-          import shutil
-          path = shutil.which("cbc")
-          if not path:
-              raise SystemExit("cbc not found")
-          print(f"::set-output name=cbc-path::{path}")
+          CBC_PATH=$(which cbc)
+          echo "cbc found at: $CBC_PATH"
+          echo "cbc-path=$CBC_PATH" >> $GITHUB_OUTPUT
 
       - name: Build with PyInstaller
         shell: bash -l {0}
