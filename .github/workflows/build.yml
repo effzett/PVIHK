@@ -32,8 +32,10 @@ jobs:
 
       - name: Read build number
         id: read_build
+        shell: bash
         run: |
-          echo "BUILD_NUMBER=$(<build_number.txt)" >> $GITHUB_ENV
+          echo "BUILD_NUMBER=$(cat build_number.txt)" >> $GITHUB_ENV
+
 
       - name: Build with PyInstaller
         shell: bash -l {0}
