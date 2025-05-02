@@ -24,11 +24,10 @@ Section "Installieren"
   File "${DIST_DIR}\\pvihk.exe"
   WriteUninstaller "$INSTDIR\\Uninstall.exe"
 
+  # Benutzer Kontext erzwingen
+  SetShellVarContext current
   # Startmenüordner anlegen
   CreateDirectory "$SMPROGRAMS\\pvihk"
-
-  SetShellVarContext current
-
   # Startmenü-Verknüpfung zur Anwendung
   CreateShortCut "$SMPROGRAMS\\pvihk\\pvihk.lnk" "$INSTDIR\\pvihk.exe" "" "$INSTDIR\\pvihk.exe" 0
 
