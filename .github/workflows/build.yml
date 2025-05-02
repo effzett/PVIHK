@@ -31,17 +31,18 @@ jobs:
         shell: cmd
 
       - name: Build with PyInstaller
+        shell: bash -l {0}
         run: |
-          pyinstaller ^
-            --noconfirm ^
-            --windowed ^
-            --icon=PVIHK.ico ^
-            --hidden-import=pulp ^
-            --add-data "${{ steps.find_pulp.outputs.pulp-path }};pulp" ^
-            --collect-submodules PySide6 ^
-            --collect-data PySide6 ^
+          pyinstaller \
+            --noconfirm \
+            --windowed \
+            --icon=PVIHK.ico \
+            --hidden-import=pulp \
+            --add-data "${{ steps.find_pulp.outputs.pulp-path }};pulp" \
+            --collect-submodules PySide6 \
+            --collect-data PySide6 \
             pvihk.py
-        shell: cmd
+
 
       - name: Check if EXE was built
         run: |
