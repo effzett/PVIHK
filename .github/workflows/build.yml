@@ -1,4 +1,4 @@
-name: Build Windows EXE via PyInstaller
+name: Build Windows EXE and Auto-Release
 
 on:
   workflow_dispatch:
@@ -21,7 +21,7 @@ jobs:
 
       - name: Install pip-only packages
         run: |
-          pip install pyinstaller
+          pip install pyinstaller fpdf==1.7.2
 
       - name: Find pulp path
         id: find_pulp
@@ -30,6 +30,10 @@ jobs:
           PULP_PATH=$(python -c "import pulp, os; print(os.path.dirname(pulp.__file__))")
           echo "pulp-path=$PULP_PATH" >> $GITHUB_OUTPUT
 
+      - name: Read build number
+        id: read_build
+        run: |
+          echo "BUILD_NUMBER=$(<build_number.txt)" >> $GITHUB_ENV
 
       - name: Build with PyInstaller
         shell: bash -l {0}
@@ -58,8 +62,12 @@ jobs:
             exit 1
           )
 
-      - name: Upload EXE
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: pvihk-exe
-          path: dist/pvihk.exe
+          tag_name: v1.0.${{ env.BUILD_NUMBER }}
+          name: Release v1.0.${{ env.BUILD_NUMBER }}
+          body: Version 1.0.${{ env.BUILD_NUMBER }}
+          files: dist/pvihk.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
