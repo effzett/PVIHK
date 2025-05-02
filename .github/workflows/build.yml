@@ -1,4 +1,4 @@
-name: Build Windows EXE and Auto-Release
+name: Build Windows EXE and Auto-Release with Installer
 
 on:
   workflow_dispatch:
@@ -36,7 +36,6 @@ jobs:
         run: |
           echo "BUILD_NUMBER=$(cat build_number.txt)" >> $GITHUB_ENV
 
-
       - name: Build with PyInstaller
         shell: bash -l {0}
         run: |
@@ -56,13 +55,15 @@ jobs:
             --distpath dist \
             pvihk.py
 
-      - name: Check if EXE was built
+      - name: Create NSIS Installer
+        run: |
+          makensis installer/pvihk_installer.nsi
+
+      - name: Check if EXEs were built
         shell: cmd
         run: |
-          if not exist dist\pvihk.exe (
-            echo Build failed: EXE not found.
-            exit 1
-          )
+          if not exist dist\pvihk.exe exit 1
+          if not exist dist\pvihk_setup.exe exit 1
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -70,6 +71,8 @@ jobs:
           tag_name: v1.0.${{ env.BUILD_NUMBER }}
           name: Release v1.0.${{ env.BUILD_NUMBER }}
           body: Version 1.0.${{ env.BUILD_NUMBER }}
-          files: dist/pvihk.exe
+          files: |
+            dist/pvihk.exe
+            dist/pvihk_setup.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
