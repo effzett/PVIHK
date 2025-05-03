@@ -4,7 +4,11 @@
 
 !system 'mkdir "${DIST_DIR}" >nul 2>&1'
 
-OutFile "${ROOT_DIR}\\dist\\pvihk_setup.exe"
+!ifndef VERSION
+  !error "VERSION not defined! Use /DVERSION=..."
+!endif
+
+OutFile "PVIHK-${VERSION}_setup.exe"
 
 ### geändert: Installationsverzeichnis ins Benutzerprofil verlegen
 #InstallDir "$PROGRAMFILES64\\pvihk"
