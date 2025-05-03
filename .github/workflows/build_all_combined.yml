@@ -123,7 +123,7 @@ jobs:
         run: dir LICENSE.txt
 
       - name: Run NSIS
-        run: makensis /DVERSION=v1.0.${{ env.BUILD_NUMBER }} installer/installer.nsi
+        run: makensis /DVERSION=v1.0.${{ env.BUILD_NUMBER }} installer/pvihk_installer.nsi
 
       - name: Check if EXEs were built
         shell: pwsh
