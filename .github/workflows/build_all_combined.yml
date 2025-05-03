@@ -109,7 +109,7 @@ jobs:
             --onefile \
             --windowed \
             --log-level=DEBUG \
-            --icon=PVIHK.ico \
+            --icon=assets/PVIHK.ico \
             --hidden-import=pulp \
             --add-data "${{ steps.find_pulp.outputs.pulp-path }};pulp" \
             --add-data "build_number.txt;." \
@@ -120,7 +120,7 @@ jobs:
             pvihk.py
 
       - name: Debug LICENSE exist
-        run: dir LICENSE.txt
+        run: dir assets\LICENSE.txt
 
       - name: Ensure dist directory exists
         shell: pwsh
@@ -153,6 +153,7 @@ jobs:
           files: |
             dist/pvihk.exe
             dist/PVIHK-v1.0.${{ env.BUILD_NUMBER }}_setup.exe
+            release/README_windows.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -198,7 +199,7 @@ jobs:
             --noconfirm \
             --onefile \
             --windowed \
-            --icon=PVIHK.icns \
+            --icon=assets/PVIHK.icns \
             --hidden-import=pulp \
             --add-data "$(python -c 'import pulp, os; print(os.path.dirname(pulp.__file__))'):pulp" \
             --add-data "build_number.txt:." \
@@ -208,22 +209,28 @@ jobs:
         run: |
           mkdir -p dmg_content
           cp -R dist/pvihk.app dmg_content/
-          cp LICENSE.txt dmg_content/
+          cp assets/LICENSE.txt dmg_content/
           ln -s /Applications dmg_content/Applications
 
       - name: Install create-dmg
         run: brew install create-dmg
 
+      - name: Cleanup dmg_content
+        run: |
+          rm -f dmg_content/*.icns
+          rm -f dmg_content/.DS_Store
+
       - name: Create DMG without background
         run: |
           create-dmg \
             --volname "PVIHK" \
-            --volicon "PVIHK.icns" \
+            --volicon "assets/disc.icns" \
             --window-pos 200 120 \
             --window-size 500 300 \
             --icon-size 100 \
             --icon "pvihk.app" 125 150 \
             --icon "Applications" 375 150 \
+            --background "assets/background.png" \
             "PVIHK-v1.0.${{ env.BUILD_NUMBER }}.dmg" \
             dmg_content/
 
@@ -233,6 +240,9 @@ jobs:
           tag_name: v1.0.${{ env.BUILD_NUMBER }}
           name: Release v1.0.${{ env.BUILD_NUMBER }}
           body: macOS Version 1.0.${{ env.BUILD_NUMBER }}
-          files: PVIHK-v1.0.${{ env.BUILD_NUMBER }}.dmg
+          files: |
+            PVIHK-v1.0.${{ env.BUILD_NUMBER }}.dmg
+            release/README_mac.txt
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
