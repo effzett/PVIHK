@@ -58,23 +58,22 @@ jobs:
       - name: Debug LICENSE exist
         run: dir LICENSE.txt
 
-      - name: Check NSIS script file
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Listing files:"
-          ls -la
-
       - name: Run NSIS
-        run: makensis /DVERSION=v1.0.${{ env.BUILD_NUMBER }} installer.nsi
+        run: makensis /DVERSION=v1.0.${{ env.BUILD_NUMBER }} installer/installer.nsi
 
       - name: Check if EXEs were built
-        shell: cmd
+        shell: pwsh
         run: |
-          if not exist dist\pvihk.exe exit 1
-          if not exist dist\pvihk_setup.exe exit 1
+          $version = "v1.0.$env:BUILD_NUMBER"
+          $setupPath = "dist/PVIHK-$version`_setup.exe"
+          if (!(Test-Path "dist/pvihk.exe")) {
+            throw "pvihk.exe not found"
+          }
+          if (!(Test-Path $setupPath)) {
+            throw "$setupPath not found"
+          }
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release with versioned installer
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v1.0.${{ env.BUILD_NUMBER }}
@@ -82,16 +81,7 @@ jobs:
           body: Version 1.0.${{ env.BUILD_NUMBER }}
           files: |
             dist/pvihk.exe
-            dist/pvihk_setup.exe
+            dist/PVIHK-v1.0.${{ env.BUILD_NUMBER }}_setup.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Installer to GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v1.0.${{ env.BUILD_NUMBER }}
-          name: Release v1.0.${{ env.BUILD_NUMBER }}
-          body: Version 1.0.${{ env.BUILD_NUMBER }}
-          files: dist/pvihk_setup.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
