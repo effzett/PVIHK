@@ -122,6 +122,13 @@ jobs:
       - name: Debug LICENSE exist
         run: dir LICENSE.txt
 
+      - name: Ensure dist directory exists
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "dist")) {
+            New-Item -ItemType Directory -Path "dist"
+          }
+
       - name: Run NSIS
         run: makensis /DVERSION=v1.0.${{ env.BUILD_NUMBER }} installer/pvihk_installer.nsi
 
