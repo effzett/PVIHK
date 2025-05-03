@@ -1,5 +1,6 @@
 import sys
 import os
+import platform
 
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import Qt, QDate, QObject, QRunnable, QThreadPool, Signal, Slot
@@ -1299,6 +1300,10 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
 
 app = QApplication(sys.argv)
+
+if platform.system() == "Windows":
+    app.setStyle("Fusion")
+
 window = MainWindow()
 window.show()
 
