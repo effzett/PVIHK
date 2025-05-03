@@ -61,8 +61,6 @@ jobs:
       - name: Run NSIS
         run: makensis /DVERSION=v1.0.${{ env.BUILD_NUMBER }} installer.nsi
 
-      - name: Create NSIS Installer
-
       - name: Check if EXEs were built
         shell: cmd
         run: |
