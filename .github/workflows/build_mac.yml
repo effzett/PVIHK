@@ -1,0 +1,76 @@
+name: Build macOS DMG and Auto-Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_macos:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: environment.yml
+          activate-environment: pvihk
+          auto-update-conda: true
+          channels: conda-forge,defaults
+
+      - name: Install pip-only packages
+        run: |
+          pip install fpdf==1.7.2 pyinstaller
+
+      - name: Read build number
+        id: read_build
+        shell: bash
+        run: echo "BUILD_NUMBER=$(cat build_number.txt)" >> $GITHUB_ENV
+
+      - name: Build macOS app with PyInstaller
+        shell: bash -l {0}
+        run: |
+          pyinstaller \
+            --clean \
+            --noconfirm \
+            --onefile \
+            --windowed \
+            --icon=PVIHK.icns \
+            --hidden-import=pulp \
+            --add-data "$(python -c 'import pulp, os; print(os.path.dirname(pulp.__file__))'):pulp" \
+            --add-data "build_number.txt:." \
+            pvihk.py
+
+      - name: Prepare content for DMG
+        run: |
+          mkdir -p dmg_content
+          cp -R dist/pvihk.app dmg_content/
+          cp LICENSE.txt dmg_content/
+          ln -s /Applications dmg_content/Applications
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Create DMG without background
+        run: |
+          create-dmg \
+            --volname "PVIHK" \
+            --volicon "PVIHK.icns" \
+            --window-pos 200 120 \
+            --window-size 500 300 \
+            --icon-size 100 \
+            --icon "pvihk.app" 125 150 \
+            --icon "Applications" 375 150 \
+            "PVIHK-v1.0.${{ env.BUILD_NUMBER }}.dmg" \
+            dmg_content/
+
+      - name: Upload DMG to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.${{ env.BUILD_NUMBER }}
+          name: Release v1.0.${{ env.BUILD_NUMBER }}
+          body: macOS Version 1.0.${{ env.BUILD_NUMBER }}
+          files: PVIHK-v1.0.${{ env.BUILD_NUMBER }}.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
