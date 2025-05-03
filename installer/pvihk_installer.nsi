@@ -8,7 +8,7 @@
   !error "VERSION not defined! Use /DVERSION=..."
 !endif
 
-OutFile "${DIST_DIR}\\PVIHK-v${VERSION}_setup.exe"
+OutFile "${DIST_DIR}\\PVIHK-${VERSION}_setup.exe"
 
 ### geändert: Installationsverzeichnis ins Benutzerprofil verlegen
 #InstallDir "$PROGRAMFILES64\\pvihk"
