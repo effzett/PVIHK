@@ -1,0 +1,231 @@
+name: Build PVIHK (plattformselektiv)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Welche Plattform soll gebaut werden?'
+        required: true
+        default: 'windows'
+        type: choice
+        options:
+          - windows
+          - macos
+          - both
+
+jobs:
+  init:
+    name: Generiere Buildnummer
+    runs-on: ubuntu-latest
+    outputs:
+      build_number: ${{ steps.get_number.outputs.build_number }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lese build_number.txt
+        id: get_number
+        run: echo "build_number=$(cat build_number.txt)" >> $GITHUB_OUTPUT
+
+      - name: Brich ab, wenn Plattform für Release-Tag schon veröffentlicht wurde
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="v1.0.${{ steps.get_number.outputs.build_number }}"
+          target="${{ github.event.inputs.target }}"
+
+          echo "Überprüfe Release-Tag: $tag für Zielplattform: $target"
+
+          if ! gh release view "$tag" > /dev/null 2>&1; then
+            echo "✅ Release $tag existiert noch nicht – alles ok."
+            exit 0
+          fi
+
+          echo "ℹ️ Release $tag existiert bereits."
+
+          if [[ "$target" == "windows" || "$target" == "both" ]]; then
+            if gh release view "$tag" | grep -q 'pvihk.exe'; then
+              echo "❌ Windows-Dateien wurden bereits veröffentlicht."
+              exit 1
+            fi
+          fi
+
+          if [[ "$target" == "macos" || "$target" == "both" ]]; then
+            if gh release view "$tag" | grep -q '.dmg'; then
+              echo "❌ macOS-Dateien wurden bereits veröffentlicht."
+              exit 1
+            fi
+          fi
+
+          echo "✅ Gewählte Plattform wurde noch nicht veröffentlicht – weiter geht's."
+
+
+
+  build-windows:
+    name: Windows-Build
+    runs-on: windows-latest
+    needs: init
+    if: ${{ github.event.inputs.target == 'windows' || github.event.inputs.target == 'both' }}
+    env:
+      BUILD_NUMBER: ${{ needs.init.outputs.build_number }}
+    steps:
+      - name: Hier kommen deine Windows-Build-Schritte rein
+        run: echo "Würde jetzt Windows-Build für $env:BUILD_NUMBER machen"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: environment-windows.yml
+          activate-environment: pvihk
+          auto-update-conda: true
+          channels: conda-forge,defaults
+
+      - name: Install pip-only packages
+        run: |
+          pip install pyinstaller fpdf==1.7.2
+
+      - name: Find pulp path
+        id: find_pulp
+        shell: bash -l {0}
+        run: |
+          PULP_PATH=$(python -c "import pulp, os; print(os.path.dirname(pulp.__file__))")
+          echo "pulp-path=$PULP_PATH" >> $GITHUB_OUTPUT
+
+      - name: Read build number
+        id: read_build
+        shell: bash
+        run: |
+          echo "BUILD_NUMBER=$(cat build_number.txt)" >> $GITHUB_ENV
+
+      - name: Build with PyInstaller
+        shell: bash -l {0}
+        run: |
+          pyinstaller \
+            --clean \
+            --noconfirm \
+            --onefile \
+            --windowed \
+            --log-level=DEBUG \
+            --icon=PVIHK.ico \
+            --hidden-import=pulp \
+            --add-data "${{ steps.find_pulp.outputs.pulp-path }};pulp" \
+            --add-data "build_number.txt;." \
+            --add-binary "assets/cbc.exe;." \
+            --collect-submodules PySide6 \
+            --collect-data PySide6 \
+            --distpath dist \
+            pvihk.py
+
+      - name: Debug LICENSE exist
+        run: dir LICENSE.txt
+
+      - name: Run NSIS
+        run: makensis /DVERSION=v1.0.${{ env.BUILD_NUMBER }} installer/installer.nsi
+
+      - name: Check if EXEs were built
+        shell: pwsh
+        run: |
+          $version = "v1.0.$env:BUILD_NUMBER"
+          $setupPath = "dist/PVIHK-$version`_setup.exe"
+          if (!(Test-Path "dist/pvihk.exe")) {
+            throw "pvihk.exe not found"
+          }
+          if (!(Test-Path $setupPath)) {
+            throw "$setupPath not found"
+          }
+
+      - name: Create GitHub Release with versioned installer
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.${{ env.BUILD_NUMBER }}
+          name: Release v1.0.${{ env.BUILD_NUMBER }}
+          body: Version 1.0.${{ env.BUILD_NUMBER }}
+          files: |
+            dist/pvihk.exe
+            dist/PVIHK-v1.0.${{ env.BUILD_NUMBER }}_setup.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+
+  build-macos:
+    name: macOS-Build
+    runs-on: macos-latest
+    needs: init
+    if: ${{ github.event.inputs.target == 'macos' || github.event.inputs.target == 'both' }}
+    env:
+      BUILD_NUMBER: ${{ needs.init.outputs.build_number }}
+    steps:
+      - name: Hier kommen deine macOS-Build-Schritte rein
+        run: echo "Würde jetzt macOS-Build für $BUILD_NUMBER machen"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: environment.yml
+          activate-environment: pvihk
+          auto-update-conda: true
+          channels: conda-forge,defaults
+
+      - name: Install pip-only packages
+        run: |
+          pip install fpdf==1.7.2 pyinstaller
+
+      - name: Read build number
+        id: read_build
+        shell: bash
+        run: echo "BUILD_NUMBER=$(cat build_number.txt)" >> $GITHUB_ENV
+
+      - name: Build macOS app with PyInstaller
+        shell: bash -l {0}
+        run: |
+          pyinstaller \
+            --clean \
+            --noconfirm \
+            --onefile \
+            --windowed \
+            --icon=PVIHK.icns \
+            --hidden-import=pulp \
+            --add-data "$(python -c 'import pulp, os; print(os.path.dirname(pulp.__file__))'):pulp" \
+            --add-data "build_number.txt:." \
+            pvihk.py
+
+      - name: Prepare content for DMG
+        run: |
+          mkdir -p dmg_content
+          cp -R dist/pvihk.app dmg_content/
+          cp LICENSE.txt dmg_content/
+          ln -s /Applications dmg_content/Applications
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Create DMG without background
+        run: |
+          create-dmg \
+            --volname "PVIHK" \
+            --volicon "PVIHK.icns" \
+            --window-pos 200 120 \
+            --window-size 500 300 \
+            --icon-size 100 \
+            --icon "pvihk.app" 125 150 \
+            --icon "Applications" 375 150 \
+            "PVIHK-v1.0.${{ env.BUILD_NUMBER }}.dmg" \
+            dmg_content/
+
+      - name: Upload DMG to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.${{ env.BUILD_NUMBER }}
+          name: Release v1.0.${{ env.BUILD_NUMBER }}
+          body: macOS Version 1.0.${{ env.BUILD_NUMBER }}
+          files: PVIHK-v1.0.${{ env.BUILD_NUMBER }}.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
