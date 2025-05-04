@@ -205,7 +205,6 @@ jobs:
             --add-data "build_number.txt:." \
             pvihk.py
 
-
       - name: Prepare content for DMG
         run: |
           rm -rf dmg_content && mkdir dmg_content
@@ -230,7 +229,6 @@ jobs:
             --icon-size 100 \
             --icon "pvihk.app" 125 150 \
             --icon "Applications" 375 150 \
-#            --background "assets/background.png" \
             "PVIHK-v1.0.${{ env.BUILD_NUMBER }}.dmg" \
             dmg_content/
 
