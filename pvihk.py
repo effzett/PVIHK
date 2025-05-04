@@ -115,6 +115,7 @@ def berechne_korrektorenverteilung(eingabedaten) -> dict:
         prob += belastung[p] - mittlere_belastung <= abweichung[p]
         prob += mittlere_belastung - belastung[p] <= abweichung[p]
 
+# Hier erfolgt die Gewichtung: Gleichverteilung / Anwesenheit
     prob += (
         1.0 * pulp.lpSum(abweichung[p] for p in korrektornamen) +
         0.1 * pulp.lpSum(anwesenheit[p, t] for p in korrektornamen for t in [0, 1])
