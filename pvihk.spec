@@ -35,11 +35,11 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['PVIHK.icns'],
+    icon=['assets/PVIHK.icns'],
 )
 app = BUNDLE(
     exe,
     name='pvihk.app',
-    icon='PVIHK.icns',
+    icon='assets/PVIHK.icns',
     bundle_identifier=None,
 )
