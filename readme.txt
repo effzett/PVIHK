@@ -1,1 +1,0 @@
-pyinstaller --onefile --windowed --icon assets/PVIHK.icns --hidden-import=pulp  --add-data "/Users/internet/anaconda3/envs/pvihk/lib/python3.12/site-packages/pulp:pulp" --add-data "build_number.txt:." pvihk.py
