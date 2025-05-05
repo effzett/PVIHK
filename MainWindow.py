@@ -77,6 +77,7 @@ class Ui_MainWindow(object):
         self.date1Edit.setMinimumSize(QSize(0, 30))
         self.date1Edit.setFont(font)
         self.date1Edit.setAlignment(Qt.AlignCenter)
+        self.date1Edit.setCalendarPopup(True)
 
         self.verticalLayout_5.addWidget(self.date1Edit)
 
@@ -120,6 +121,7 @@ class Ui_MainWindow(object):
         self.date2Edit.setMinimumSize(QSize(0, 30))
         self.date2Edit.setFont(font)
         self.date2Edit.setAlignment(Qt.AlignCenter)
+        self.date2Edit.setCalendarPopup(True)
 
         self.verticalLayout_7.addWidget(self.date2Edit)
 
@@ -146,16 +148,15 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.verticalLayout_10 = QVBoxLayout()
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
-        self.date1EditX = QDateEdit(self.frame_bottom)
-        self.date1EditX.setObjectName(u"date1EditX")
-        self.date1EditX.setEnabled(True)
-        self.date1EditX.setMinimumSize(QSize(0, 30))
-        self.date1EditX.setMaximumSize(QSize(16777215, 16777215))
-        self.date1EditX.setFont(font)
-        self.date1EditX.setAlignment(Qt.AlignCenter)
-        self.date1EditX.setReadOnly(True)
+        self.labelDate1 = QLabel(self.frame_bottom)
+        self.labelDate1.setObjectName(u"labelDate1")
+        font1 = QFont()
+        font1.setPointSize(15)
+        font1.setBold(True)
+        self.labelDate1.setFont(font1)
+        self.labelDate1.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout_10.addWidget(self.date1EditX)
+        self.verticalLayout_10.addWidget(self.labelDate1)
 
         self.table1Widget = QTableWidget(self.frame_bottom)
         if (self.table1Widget.columnCount() < 3):
@@ -192,15 +193,12 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_9 = QVBoxLayout()
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
-        self.date2EditX = QDateEdit(self.frame_bottom)
-        self.date2EditX.setObjectName(u"date2EditX")
-        self.date2EditX.setMinimumSize(QSize(0, 30))
-        self.date2EditX.setMaximumSize(QSize(16777215, 16777215))
-        self.date2EditX.setFont(font)
-        self.date2EditX.setAlignment(Qt.AlignCenter)
-        self.date2EditX.setReadOnly(True)
+        self.labelDate2 = QLabel(self.frame_bottom)
+        self.labelDate2.setObjectName(u"labelDate2")
+        self.labelDate2.setFont(font1)
+        self.labelDate2.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout_9.addWidget(self.date2EditX)
+        self.verticalLayout_9.addWidget(self.labelDate2)
 
         self.table2Widget = QTableWidget(self.frame_bottom)
         if (self.table2Widget.columnCount() < 3):
@@ -317,10 +315,8 @@ class Ui_MainWindow(object):
         QWidget.setTabOrder(self.listWidget2, self.listWidgetList)
         QWidget.setTabOrder(self.listWidgetList, self.pushButtonCancel)
         QWidget.setTabOrder(self.pushButtonCancel, self.pushButtonOptimize)
-        QWidget.setTabOrder(self.pushButtonOptimize, self.date1EditX)
-        QWidget.setTabOrder(self.date1EditX, self.table2Widget)
+        QWidget.setTabOrder(self.pushButtonOptimize, self.table2Widget)
         QWidget.setTabOrder(self.table2Widget, self.table1Widget)
-        QWidget.setTabOrder(self.table1Widget, self.date2EditX)
 
         self.menuBar.addAction(self.menuDatei.menuAction())
         self.menuBar.addAction(self.menuAnsicht.menuAction())
@@ -368,6 +364,7 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(tooltip)
         self.date2Edit.setToolTip("")
 #endif // QT_CONFIG(tooltip)
+        self.labelDate1.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         ___qtablewidgetitem = self.table1Widget.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"Zeit", None));
         ___qtablewidgetitem1 = self.table1Widget.horizontalHeaderItem(1)
@@ -379,6 +376,7 @@ class Ui_MainWindow(object):
         self.table1Widget.setSortingEnabled(False)
         self.table1Widget.setSortingEnabled(__sortingEnabled)
 
+        self.labelDate2.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         ___qtablewidgetitem3 = self.table2Widget.horizontalHeaderItem(0)
         ___qtablewidgetitem3.setText(QCoreApplication.translate("MainWindow", u"Zeit", None));
         ___qtablewidgetitem4 = self.table2Widget.horizontalHeaderItem(1)

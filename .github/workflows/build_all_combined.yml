@@ -31,7 +31,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          tag="v1.0.${{ steps.get_number.outputs.build_number }}"
+          tag="v1.1.${{ steps.get_number.outputs.build_number }}"
           target="${{ github.event.inputs.target }}"
 
           echo "Überprüfe Release-Tag: $tag für Zielplattform: $target"
@@ -130,12 +130,12 @@ jobs:
           }
 
       - name: Run NSIS
-        run: makensis /DVERSION=v1.0.${{ env.BUILD_NUMBER }} installer/pvihk_installer.nsi
+        run: makensis /DVERSION=v1.1.${{ env.BUILD_NUMBER }} installer/pvihk_installer.nsi
 
       - name: Check if EXEs were built
         shell: pwsh
         run: |
-          $version = "v1.0.$env:BUILD_NUMBER"
+          $version = "v1.1.$env:BUILD_NUMBER"
           $setupPath = "dist/PVIHK-$version`_setup.exe"
           if (!(Test-Path "dist/pvihk.exe")) {
             throw "pvihk.exe not found"
@@ -147,12 +147,12 @@ jobs:
       - name: Create GitHub Release with versioned installer
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v1.0.${{ env.BUILD_NUMBER }}
-          name: Release v1.0.${{ env.BUILD_NUMBER }}
-          body: Version 1.0.${{ env.BUILD_NUMBER }}
+          tag_name: v1.1.${{ env.BUILD_NUMBER }}
+          name: Release v1.1.${{ env.BUILD_NUMBER }}
+          body: Version 1.1.${{ env.BUILD_NUMBER }}
           files: |
             dist/pvihk.exe
-            dist/PVIHK-v1.0.${{ env.BUILD_NUMBER }}_setup.exe
+            dist/PVIHK-v1.1.${{ env.BUILD_NUMBER }}_setup.exe
             release/README_windows.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -229,17 +229,17 @@ jobs:
             --icon-size 100 \
             --icon "pvihk.app" 125 150 \
             --icon "Applications" 375 150 \
-            "PVIHK-v1.0.${{ env.BUILD_NUMBER }}.dmg" \
+            "PVIHK-v1.1.${{ env.BUILD_NUMBER }}.dmg" \
             dmg_content/
 
       - name: Upload DMG to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v1.0.${{ env.BUILD_NUMBER }}
-          name: Release v1.0.${{ env.BUILD_NUMBER }}
-          body: macOS Version 1.0.${{ env.BUILD_NUMBER }}
+          tag_name: v1.1.${{ env.BUILD_NUMBER }}
+          name: Release v1.1.${{ env.BUILD_NUMBER }}
+          body: macOS Version 1.1.${{ env.BUILD_NUMBER }}
           files: |
-            PVIHK-v1.0.${{ env.BUILD_NUMBER }}.dmg
+            PVIHK-v1.1.${{ env.BUILD_NUMBER }}.dmg
             release/README_mac.txt
 
         env:

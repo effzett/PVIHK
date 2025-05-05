@@ -71,6 +71,9 @@
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
            <item>
@@ -140,6 +143,9 @@
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
            <item>
@@ -168,32 +174,18 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_10">
          <item>
-          <widget class="QDateEdit" name="date1EditX">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
-           </property>
+          <widget class="QLabel" name="labelDate1">
            <property name="font">
             <font>
+             <pointsize>15</pointsize>
              <bold>true</bold>
             </font>
            </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -269,29 +261,18 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_9">
          <item>
-          <widget class="QDateEdit" name="date2EditX">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
-           </property>
+          <widget class="QLabel" name="labelDate2">
            <property name="font">
             <font>
+             <pointsize>15</pointsize>
              <bold>true</bold>
             </font>
            </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -591,10 +572,8 @@
   <tabstop>listWidgetList</tabstop>
   <tabstop>pushButtonCancel</tabstop>
   <tabstop>pushButtonOptimize</tabstop>
-  <tabstop>date1EditX</tabstop>
   <tabstop>table2Widget</tabstop>
   <tabstop>table1Widget</tabstop>
-  <tabstop>date2EditX</tabstop>
  </tabstops>
  <resources/>
  <connections/>

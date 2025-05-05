@@ -297,7 +297,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
         self.setWindowTitle(TITLEVERSION)
         icon_path = os.path.join(BASIS_DIR, "assets", "PVIHK.png")
-#        icon_path = resource_path("PVIHK.png")
+        #        icon_path = resource_path("PVIHK.png")
 
         self.setWindowIcon(QIcon(icon_path))
 
@@ -472,10 +472,10 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
     # Funktionen: Datum von oben nach unten kopieren
     def sync_date1(self, dat):
-        self.date1EditX.setDate(dat)
+        self.labelDate1.setText(dat.toString("dd.MM.yyyy"))
 
     def sync_date2(self, dat):
-        self.date2EditX.setDate(dat)
+        self.labelDate2.setText(dat.toString("dd.MM.yyyy"))
 
     # Programm mit Cancel beenden
     def cancel_program(self):
@@ -498,7 +498,11 @@ class MainWindow(QMainWindow,Ui_MainWindow):
                             lines = f.readlines()
                         self.listWidgetList.clear()
                         for line in lines:
-                            self.listWidgetList.addItem(line.strip())
+                            #self.listWidgetList.addItem(line.strip())
+                            item = QListWidgetItem(line.strip())
+                            item.setFlags(item.flags() | Qt.ItemIsEditable)
+                            self.listWidgetList.addItem(item)
+
                     except Exception as e:
                         print(f"Fehler beim Lesen der Datei: {e}")
 
@@ -754,7 +758,10 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.listWidgetList.clear()
 
             for line in lines:
-                self.listWidgetList.addItem(line.strip())
+                #self.listWidgetList.addItem(line.strip())
+                item = QListWidgetItem(line.strip())
+                item.setFlags(item.flags() | Qt.ItemIsEditable)
+                self.listWidgetList.addItem(item)
 
             print(f"{len(lines)} Kandidaten erfolgreich eingelesen.")
         except Exception as e:

@@ -7,7 +7,7 @@ AUTHOR = "fz@zenmeister.de"
 COPYRIGHT = "© 2025 " + AUTHOR
 
 BUILD = get_and_increment_build()
-VERSION = f"1.0.{BUILD}"
+VERSION = f"1.1.{BUILD}"
 DATE = str(date.today())
 
 TITLEVERSION = TITLE + " (V" + VERSION + ")"
