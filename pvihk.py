@@ -1081,6 +1081,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
                 self.zeitslots = neue_zeitslots
                 self.table1Widget.setRowCount(0)
                 self.table2Widget.setRowCount(0)
+                self.statusBar().clearMessage()
+                self.statusBar().setStyleSheet("")
                 self.letztes_pdf_data = None
 
             # Jetzt auch die 4 Werte dauerhaft speichern
