@@ -465,49 +465,27 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.listWidget1.setSpacing(2)  # Kein extra Abstand zwischen Items
         self.listWidget2.setSpacing(2)  # Kein extra Abstand zwischen Items
 
-        # Beispielsweise 5 Einträge mit Comboboxen
-        for i in range(8):
+        from korrektorItem import KorrektorItem  # ganz oben im Modul einfügen, falls noch nicht geschehen
+
+        self.korrektor_items_tag1 = []
+        self.korrektor_items_tag2 = []
+
+        korrektoren_default = [f"Korrektor {i + 1}" for i in range(10)]
+
+        for name in korrektoren_default:
+            # Tag 1
             item1 = QListWidgetItem(self.listWidget1)
+            widget1 = KorrektorItem(name=name, checked=False)
+            self.listWidget1.setItemWidget(item1, widget1)
+            item1.setSizeHint(widget1.sizeHint())
+            self.korrektor_items_tag1.append(widget1)
+
+            # Tag 2
             item2 = QListWidgetItem(self.listWidget2)
-            combo1 = QComboBox()
-            combo2 = QComboBox()
-            combo1.addItems(options)
-            combo2.addItems(options)
-            # Styling: ComboBox kompakt machen
-            combo1.setFixedHeight(22)
-            combo1.setStyleSheet("""
-                QComboBox {
-                    padding-left: 10px;
-                    padding-top: 0px;
-                    padding-bottom: 0px;
-                    margin: 0px;
-                }
-            """)
-            combo2.setFixedHeight(22)
-            combo2.setStyleSheet("""
-                QComboBox {
-                    padding-left: 10px;
-                    padding-top: 0px;
-                    padding-bottom: 0px;
-                    margin: 0px;
-                }
-            """)
-
-            self.listWidget1.setItemWidget(item1, combo1)
-            self.listWidget2.setItemWidget(item2, combo2)
-            item1.setSizeHint(combo1.sizeHint())  # Macht, dass die Höhe automatisch passt
-            item2.setSizeHint(combo2.sizeHint())  # Macht, dass die Höhe automatisch passt
-            item1.setSelected(False)
-            item2.setSelected(False)
-
-            combo1.activated.connect(lambda: self.listWidget1.clearSelection())  # Selektion nach Änderung löschen
-            combo2.activated.connect(lambda: self.listWidget2.clearSelection())  # Selektion nach Änderung löschen
-
-            combo1.currentIndexChanged.connect(lambda _, c=combo1: self.check_for_duplicates(self.combos1))
-            combo2.currentIndexChanged.connect(lambda _, c=combo2: self.check_for_duplicates(self.combos2))
-
-            self.combos1.append(combo1)
-            self.combos2.append(combo2)
+            widget2 = KorrektorItem(name=name, checked=False)
+            self.listWidget2.setItemWidget(item2, widget2)
+            item2.setSizeHint(widget2.sizeHint())
+            self.korrektor_items_tag2.append(widget2)
 
             # Jetzt per StyleSheet nur untere Border simulieren (quasi horizontale Linien)
             self.table1Widget.setStyleSheet("""
@@ -622,24 +600,29 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
         # Verfügbarkeiten von Tag 1 sammeln (listWidget1)
         tag1_datum = self.date1Edit.date().toString("yyyy-MM-dd")
-        for i in range(self.listWidget1.count()):
-            combo: QComboBox = self.listWidget1.itemWidget(self.listWidget1.item(i))
-            name = combo.currentText().strip()
+        tag2_datum = self.date2Edit.date().toString("yyyy-MM-dd")
+
+        # Verfügbarkeiten aus den neuen Widgets
+        for widget in self.korrektor_items_tag1:
+            name = widget.get_name()
+            if not name:
+                continue  # Leer -> ignorieren
+
             if name:
                 if name not in verfuegbarkeiten:
                     verfuegbarkeiten[name] = []
-                if tag1_datum not in verfuegbarkeiten[name]:
+                if widget.is_checked() and tag1_datum not in verfuegbarkeiten[name]:
                     verfuegbarkeiten[name].append(tag1_datum)
 
-        # Verfügbarkeiten von Tag 2 sammeln (listWidget2)
-        tag2_datum = self.date2Edit.date().toString("yyyy-MM-dd")
-        for i in range(self.listWidget2.count()):
-            combo: QComboBox = self.listWidget2.itemWidget(self.listWidget2.item(i))
-            name = combo.currentText().strip()
+        for widget in self.korrektor_items_tag2:
+            name = widget.get_name()
+            if not name:
+                continue  # Leer -> ignorieren
+
             if name:
                 if name not in verfuegbarkeiten:
                     verfuegbarkeiten[name] = []
-                if tag2_datum not in verfuegbarkeiten[name]:
+                if widget.is_checked() and tag2_datum not in verfuegbarkeiten[name]:
                     verfuegbarkeiten[name].append(tag2_datum)
 
         eingabedaten["verfügbarkeiten"] = verfuegbarkeiten
@@ -871,10 +854,6 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             print(f"Fehler beim Einlesen der Kandidatenliste: {e}")
 
     def korrektoren_einlesen(self):
-        """
-        Lädt eine neue Liste von Korrektoren aus einer Textdatei und aktualisiert die Comboboxen.
-        Vorhandene Auswahlen bleiben erhalten, wenn möglich.
-        """
         dateiname, _ = QFileDialog.getOpenFileName(
             self,
             "Korrektorenliste laden...",
@@ -886,31 +865,43 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
         try:
             with open(dateiname, "r", encoding="utf-8") as f:
-                neue_korrektoren = [line.strip() for line in f if line.strip()]
+                zeilen = [line.strip() for line in f if line.strip()]
+            version = 1
+            if zeilen and zeilen[0].startswith("# version="):
+                try:
+                    version = int(zeilen[0].split("=")[1])
+                except ValueError:
+                    version = 0  # ungültige Versionsangabe
+                zeilen.pop(0)  # Entferne die Versionszeile
+
+            if version != 2:
+                print(f"Korrektorenliste nicht geladen: inkompatible Version {version} (erwartet: 2)")
+                return
+
         except Exception as e:
             print(f"Fehler beim Einlesen der Korrektoren: {e}")
             return
 
-        if not neue_korrektoren:
-            print("Keine Korrektoren gefunden.")
-            return
+        # Maximal 10 übernehmen
+        zeilen = zeilen[:10]
 
-        # Alle bisherigen Comboboxen aktualisieren
-        for combos in (self.combos1, self.combos2):
-            for combo in combos:
-                aktuelle_auswahl = combo.currentText()
-                combo.clear()
-                combo.addItem(" ")  # Leere erste Auswahl
-                combo.addItems(neue_korrektoren)
+        # Beide Tage aktualisieren (gleichmäßig)
+        for i, zeile in enumerate(zeilen):
+            parts = zeile.split(";")
+            name = parts[0].strip()
+            if not name:
+                continue  # Zeile ignorieren, wenn Name leer
 
-                # Nach dem Auffüllen versuchen, die alte Auswahl wiederherzustellen
-                index = combo.findText(aktuelle_auswahl)
-                if index != -1:
-                    combo.setCurrentIndex(index)
-                else:
-                    combo.setCurrentIndex(0)  # Falls alter Eintrag nicht gefunden wurde, auf leer setzen
+            checked = parts[1].strip() == "1" if len(parts) > 1 else False
 
-        print(f"Korrektorenliste erfolgreich geladen: {neue_korrektoren}")
+            if i < len(self.korrektor_items_tag1):
+                self.korrektor_items_tag1[i].set_name(name)
+                self.korrektor_items_tag1[i].set_checked(checked)
+            if i < len(self.korrektor_items_tag2):
+                self.korrektor_items_tag2[i].set_name(name)
+                self.korrektor_items_tag2[i].set_checked(checked)
+
+        print(f"Korrektorenliste erfolgreich geladen mit {len(zeilen)} Einträgen.")
 
     def kandidaten_speichern(self):
         """
@@ -939,10 +930,6 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             print(f"Fehler beim Speichern der Kandidaten: {e}")
 
     def korrektoren_speichern(self):
-        """
-        Speichert alle in den Comboboxen eingestellten Korrektoren (beider Tage) in eine Textdatei.
-        Nur eindeutige Namen (ohne Duplikate, ohne Leerfelder).
-        """
         dateiname, _ = QFileDialog.getSaveFileName(
             self,
             "Korrektorenliste speichern...",
@@ -952,30 +939,22 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         if not dateiname:
             return
 
-        # Endung automatisch ergänzen
         if not dateiname.lower().endswith(".txt"):
             dateiname += ".txt"
 
         try:
-            korrektoren_set = set()
-
-            for combo in self.combos1 + self.combos2:
-                name = combo.currentText().strip()
-                if name:
-                    korrektoren_set.add(name)
-
-            korrektoren_liste = sorted(korrektoren_set)
-
+            # Nur Namen aus Tag 1 exportieren, zusätzlich mit Anwesenheits-Flag
             with open(dateiname, "w", encoding="utf-8") as f:
-                for name in korrektoren_liste:
-                    f.write(name + "\n")
+                f.write("# version=2\n")
+                for w in self.korrektor_items_tag1:
+                    name = w.get_name()
+                    if name:
+                        checked = "1" if w.is_checked() else "0"
+                        f.write(f"{name};{checked}\n")
 
             print(f"Korrektorenliste erfolgreich gespeichert: {dateiname}")
         except Exception as e:
             print(f"Fehler beim Speichern der Korrektoren: {e}")
-
-
-
 
     def session_save(self):
         """
@@ -998,16 +977,21 @@ class MainWindow(QMainWindow,Ui_MainWindow):
                                           range(self.listWidgetList.count())]
 
             # Korrektoren Tag 1
-            session_data["korrektoren_tag1"] = [self.listWidget1.itemWidget(self.listWidget1.item(i)).currentText()
-                                                for i in range(self.listWidget1.count())]
+            session_data["korrektoren_tag1"] = [
+                {"name": w.get_name(), "checked": w.is_checked()}
+                for w in self.korrektor_items_tag1
+            ]
 
             # Korrektoren Tag 2
-            session_data["korrektoren_tag2"] = [self.listWidget2.itemWidget(self.listWidget2.item(i)).currentText()
-                                                for i in range(self.listWidget2.count())]
+            session_data["korrektoren_tag2"] = [
+                {"name": w.get_name(), "checked": w.is_checked()}
+                for w in self.korrektor_items_tag2
+            ]
 
             # Prüfungstage
             session_data["datum1"] = self.date1Edit.date().toString(Qt.ISODate)
             session_data["datum2"] = self.date2Edit.date().toString(Qt.ISODate)
+            session_data["version"] = 2
 
             # Datei schreiben
             with open(str(SESSION_FILE), "w", encoding="utf-8") as f:
@@ -1041,6 +1025,11 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             with open(SESSION_FILE, "r", encoding="utf-8") as f:
                 session_data = json.load(f)
 
+            version = session_data.get("version", 1)
+            if version != 2:
+                print(f"Sitzung wird nicht geladen: inkompatible Version {version} (erwartet: 2)")
+                return
+
             # Fenstergröße und -position
             g = session_data["geometry"]
             self.setGeometry(g["x"], g["y"], g["width"], g["height"])
@@ -1050,35 +1039,19 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             for text in session_data.get("prueflinge", []):
                 self.listWidgetList.addItem(text)
 
-            # --- Comboboxen zuerst neu befüllen ---
-            alle_korrektoren = sorted(
-                set(
-                    eintrag.strip()
-                    for eintrag in (session_data.get("korrektoren_tag1", []) + session_data.get("korrektoren_tag2", []))
-                    if eintrag.strip()
-                )
-            )
-
-            for combo in self.combos1 + self.combos2:
-                combo.clear()
-                combo.addItem(" ")  # Leere erste Auswahl
-                combo.addItems(alle_korrektoren)
-
             # Korrektoren Tag 1
-            for i, text in enumerate(session_data.get("korrektoren_tag1", [])):
-                if i < self.listWidget1.count():
-                    combo = self.listWidget1.itemWidget(self.listWidget1.item(i))
-                    index = combo.findText(text)
-                    if index >= 0:
-                        combo.setCurrentIndex(index)
+            for i, eintrag in enumerate(session_data.get("korrektoren_tag1", [])):
+                if i < len(self.korrektor_items_tag1):
+                    w = self.korrektor_items_tag1[i]
+                    w.set_name(eintrag.get("name", ""))
+                    w.set_checked(eintrag.get("checked", False))
 
             # Korrektoren Tag 2
-            for i, text in enumerate(session_data.get("korrektoren_tag2", [])):
-                if i < self.listWidget2.count():
-                    combo = self.listWidget2.itemWidget(self.listWidget2.item(i))
-                    index = combo.findText(text)
-                    if index >= 0:
-                        combo.setCurrentIndex(index)
+            for i, eintrag in enumerate(session_data.get("korrektoren_tag2", [])):
+                if i < len(self.korrektor_items_tag2):
+                    w = self.korrektor_items_tag2[i]
+                    w.set_name(eintrag.get("name", ""))
+                    w.set_checked(eintrag.get("checked", False))
 
             # Prüfungstage
             if "datum1" in session_data:
@@ -1128,6 +1101,11 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             with open(self.preferences_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
+            version = data.get("version", 1)
+            if version != 2:
+                print(f"Präferenzen werden nicht geladen: inkompatible Version {version} (erwartet: 2)")
+                return
+
             # Nur Zeitslots übernehmen
             if isinstance(data.get("zeitslots"), list) and all(isinstance(z, list) for z in data["zeitslots"]):
                 self.zeitslots = data["zeitslots"]
@@ -1151,6 +1129,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
             # Nur Zeitslots aus MainWindow aktualisieren
             data["zeitslots"] = self.zeitslots
+            data["version"] = 2
 
             with open(self.preferences_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)

@@ -566,14 +566,15 @@
  </widget>
  <tabstops>
   <tabstop>date1Edit</tabstop>
-  <tabstop>listWidget1</tabstop>
   <tabstop>date2Edit</tabstop>
+  <tabstop>listWidget1</tabstop>
   <tabstop>listWidget2</tabstop>
   <tabstop>listWidgetList</tabstop>
   <tabstop>pushButtonCancel</tabstop>
   <tabstop>pushButtonOptimize</tabstop>
-  <tabstop>table2Widget</tabstop>
   <tabstop>table1Widget</tabstop>
+  <tabstop>table2Widget</tabstop>
+  <tabstop>pushButtonCancelOptimize</tabstop>
  </tabstops>
  <resources/>
  <connections/>
