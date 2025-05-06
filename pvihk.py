@@ -840,7 +840,6 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.listWidgetList.clear()
 
             for line in lines:
-                #self.listWidgetList.addItem(line.strip())
                 item = QListWidgetItem(line.strip())
                 item.setFlags(item.flags() | Qt.ItemIsEditable)
                 self.listWidgetList.addItem(item)
@@ -1035,7 +1034,9 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             # Prüflingsliste
             self.listWidgetList.clear()
             for text in session_data.get("prueflinge", []):
-                self.listWidgetList.addItem(text)
+                item = QListWidgetItem(text.strip())
+                item.setFlags(item.flags() | Qt.ItemIsEditable)
+                self.listWidgetList.addItem(item)
 
             # Korrektoren Tag 1
             for i, eintrag in enumerate(session_data.get("korrektoren_tag1", [])):
