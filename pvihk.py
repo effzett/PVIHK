@@ -3,10 +3,10 @@ import os
 import platform
 
 from PySide6.QtGui import QIcon
-from PySide6.QtCore import Qt, QDate, QObject, QRunnable, QThreadPool, Signal, Slot
+from PySide6.QtCore import Qt, QDate, QObject, QRunnable, QThreadPool, Signal, Slot, QEvent, QTimer
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QAbstractItemView, QListWidgetItem, QComboBox,
-    QHeaderView, QTableWidgetItem, QFileDialog, QMessageBox
+    QHeaderView, QTableWidgetItem, QFileDialog, QMessageBox, QListWidget
 )
 
 import tempfile
@@ -44,6 +44,59 @@ else:
 #     if getattr(sys, 'frozen', False):
 #         return os.path.join(sys._MEIPASS, relative_path)
 #     return os.path.join(os.path.dirname(__file__), relative_path)
+
+
+from PySide6.QtWidgets import QListWidget, QListWidgetItem
+from PySide6.QtCore import Qt, QEvent, QTimer
+
+class CustomListWidget(QListWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.return_pressed = False
+        self.itemDelegate().commitData.connect(self.handle_commit)
+
+
+
+    def mouseDoubleClickEvent(self, event):
+        item = self.itemAt(event.pos())
+        if item:
+            self.editItem(item)
+        else:
+            self.fuege_und_editiere_neues_item_ein()
+        event.accept() # keine weiteren Aktionen
+
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+            self.return_pressed = True
+        else:
+            super().keyPressEvent(event)
+
+    def handle_commit(self, editor):
+        if not self.return_pressed:
+            return
+        self.return_pressed = False
+
+        current = self.currentItem()
+        if current:
+            text = current.text().strip()
+            if text == "":
+                row = self.row(current)
+                self.takeItem(row)  # löscht das leere Item
+                return
+
+            row = self.row(current)
+            if row + 1 < self.count():
+                self.setCurrentRow(row + 1)
+                QTimer.singleShot(0, lambda: self.editItem(self.item(row + 1)))
+            else:
+                self.fuege_und_editiere_neues_item_ein()
+
+    def fuege_und_editiere_neues_item_ein(self):
+        neues_item = QListWidgetItem("")
+        neues_item.setFlags(neues_item.flags() | Qt.ItemIsEditable)
+        self.addItem(neues_item)
+        self.setCurrentItem(neues_item)
+        QTimer.singleShot(0, lambda: self.editItem(neues_item))
 
 
 # Für Multithreading
@@ -280,6 +333,21 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
 
+        # Eigenes Widget anstelle des gebauten listWidget setzen
+        # Neues Widget erzeugen
+        custom_widget = CustomListWidget(self)
+        custom_widget.setObjectName("listWidgetList")  # Name zum Suchen
+
+        # Layout und Position finden
+        layout = self.verticalLayout_6
+        index = layout.indexOf(self.listWidgetList)
+
+        # Altes Widget entfernen und neues einsetzen
+        self.listWidgetList.setParent(None) # abkoppeln
+        layout.insertWidget(index, custom_widget)
+
+        # Referenz aktualisieren
+        self.listWidgetList = custom_widget
 
         self.preferences_file = PREFERENCES_FILE
         self.zeitslots = [
