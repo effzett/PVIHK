@@ -50,15 +50,47 @@ from PySide6.QtWidgets import QListWidget, QListWidgetItem
 from PySide6.QtCore import Qt, QEvent, QTimer
 
 class CustomListWidget(QListWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, max_items=30):
         super().__init__(parent)
+        self.max_items = max_items
+        self._limit_warning_shown = False
+
         self.return_pressed = False
         self.itemDelegate().commitData.connect(self.handle_commit)
 
+    def addItem(self, item):
+        if self.count() >= self.max_items:
+            self._warn_limit()
+            return
+        super().addItem(item if isinstance(item, QListWidgetItem) else str(item))
 
+    def addItems(self, items):
+        space_left = self.max_items - self.count()
+        if space_left <= 0:
+            self._warn_limit()
+            return
+        super().addItems(items[:space_left])
+        if len(items) > space_left:
+            self._warn_limit()
+
+    def insertItem(self, row, item):
+        if self.count() >= self.max_items:
+            self._warn_limit()
+            return
+        super().insertItem(row, item if isinstance(item, QListWidgetItem) else str(item))
+
+    def _warn_limit(self):
+        if not self._limit_warning_shown:
+            self._limit_warning_shown = True
+            QTimer.singleShot(0, self._show_limit_warning)
+
+    def _show_limit_warning(self):
+        QMessageBox.warning(self, "Listenlimit erreicht",
+                            f"Es dürfen maximal {self.max_items} Einträge hinzugefügt werden.")
 
     def mouseDoubleClickEvent(self, event):
-        item = self.itemAt(event.pos())
+        item = self.itemAt(event.position().toPoint())
+
         if item:
             self.editItem(item)
         else:
@@ -570,6 +602,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
                             item = QListWidgetItem(line.strip())
                             item.setFlags(item.flags() | Qt.ItemIsEditable)
                             self.listWidgetList.addItem(item)
+                        self.listWidgetList._limit_warning_shown = False
 
                     except Exception as e:
                         print(f"Fehler beim Lesen der Datei: {e}")
@@ -830,6 +863,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
                 item = QListWidgetItem(line.strip())
                 item.setFlags(item.flags() | Qt.ItemIsEditable)
                 self.listWidgetList.addItem(item)
+
+            self.listWidgetList._limit_warning_shown = False
 
             print(f"{len(lines)} Kandidaten erfolgreich eingelesen.")
         except Exception as e:
