@@ -603,27 +603,25 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         tag2_datum = self.date2Edit.date().toString("yyyy-MM-dd")
 
         # Verfügbarkeiten aus den neuen Widgets
+        korrektor_zwischenspeicher = {}
+
+        # Tag 1
         for widget in self.korrektor_items_tag1:
-            name = widget.get_name()
-            if not name:
-                continue  # Leer -> ignorieren
-
+            name = widget.get_name().strip()
             if name:
-                if name not in verfuegbarkeiten:
-                    verfuegbarkeiten[name] = []
-                if widget.is_checked() and tag1_datum not in verfuegbarkeiten[name]:
-                    verfuegbarkeiten[name].append(tag1_datum)
+                korrektor_zwischenspeicher.setdefault(name, []).append((tag1_datum, widget.is_checked()))
 
+        # Tag 2
         for widget in self.korrektor_items_tag2:
-            name = widget.get_name()
-            if not name:
-                continue  # Leer -> ignorieren
-
+            name = widget.get_name().strip()
             if name:
-                if name not in verfuegbarkeiten:
-                    verfuegbarkeiten[name] = []
-                if widget.is_checked() and tag2_datum not in verfuegbarkeiten[name]:
-                    verfuegbarkeiten[name].append(tag2_datum)
+                korrektor_zwischenspeicher.setdefault(name, []).append((tag2_datum, widget.is_checked()))
+
+        # Jetzt filtern: nur Korrektoren mit mindestens einer aktiven Checkbox
+        for name, tag_infos in korrektor_zwischenspeicher.items():
+            tage = [tag for tag, checked in tag_infos if checked]
+            if tage:
+                verfuegbarkeiten[name] = tage
 
         eingabedaten["verfügbarkeiten"] = verfuegbarkeiten
 

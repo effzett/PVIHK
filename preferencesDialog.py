@@ -59,6 +59,11 @@ class PreferencesDialog(QDialog, Ui_Preferences):
             with open(self.preferences_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
+            version = data.get("version", 1)
+            if version != 2:
+                print(f"⚠️ Einstellungen nicht geladen: inkompatible Version {version} (erwartet: 2)")
+                return
+
             with block_signals([
                 self.timeEditBegin1,
                 self.timeEditBegin2,
@@ -88,6 +93,7 @@ class PreferencesDialog(QDialog, Ui_Preferences):
 
     def save_preferences(self):
         daten = {
+            "version": 2,
             "begin1": self.timeEditBegin1.time().toString("HH:mm"),
             "begin2": self.timeEditBegin2.time().toString("HH:mm"),
             "dauer1": self.spinBoxDuration1.value(),
