@@ -15,10 +15,11 @@ on:
 
 jobs:
   init:
-    name: Generiere Buildnummer
+    name: Generiere Buildnummer und Version
     runs-on: ubuntu-latest
     outputs:
       build_number: ${{ steps.get_number.outputs.build_number }}
+      version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,6 +27,13 @@ jobs:
       - name: Lese build_number.txt
         id: get_number
         run: echo "build_number=$(cat build_number.txt)" >> $GITHUB_OUTPUT
+
+      - name: Lese Version aus build.py
+        id: get_version
+        run: |
+          echo "Installiere Abhängigkeiten (falls nötig)..."
+          pip install .  # oder nur: pip install build.py falls lokal
+          echo "version=$(python3 -c 'from build import get_version; print(get_version(False))')" >> $GITHUB_OUTPUT
 
       - name: Brich ab, wenn Plattform für Release-Tag schon veröffentlicht wurde
         env:
@@ -68,6 +76,7 @@ jobs:
     if: ${{ github.event.inputs.target == 'windows' || github.event.inputs.target == 'both' }}
     env:
       BUILD_NUMBER: ${{ needs.init.outputs.build_number }}
+      VERSION: ${{ needs.init.outputs.version }}
     steps:
       - name: Hier kommen deine Windows-Build-Schritte rein
         run: echo "Würde jetzt Windows-Build für $env:BUILD_NUMBER machen"
@@ -130,7 +139,7 @@ jobs:
           }
 
       - name: Run NSIS
-        run: makensis /DVERSION=v2.0.${{ env.BUILD_NUMBER }} installer/pvihk_installer.nsi
+        run: makensis /DVERSION=${{ needs.init.outputs.version }} installer/pvihk_installer.nsi
 
       - name: Check if EXEs were built
         shell: pwsh
@@ -167,6 +176,8 @@ jobs:
     if: ${{ github.event.inputs.target == 'macos' || github.event.inputs.target == 'both' }}
     env:
       BUILD_NUMBER: ${{ needs.init.outputs.build_number }}
+      VERSION: ${{ needs.init.outputs.version }}
+
     steps:
       - name: Hier kommen deine macOS-Build-Schritte rein
         run: echo "Würde jetzt macOS-Build für $BUILD_NUMBER machen"
@@ -229,17 +240,18 @@ jobs:
             --icon-size 100 \
             --icon "pvihk.app" 125 150 \
             --icon "Applications" 375 150 \
-            "PVIHK-v2.0.${{ env.BUILD_NUMBER }}.dmg" \
+            "PVIHK-${{ env.VERSION }}.dmg" \
             dmg_content/
+
 
       - name: Upload DMG to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v2.0.${{ env.BUILD_NUMBER }}
-          name: Release v2.0.${{ env.BUILD_NUMBER }}
-          body: macOS Version 2.0.${{ env.BUILD_NUMBER }}
+          tag_name: v${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
+          body: macOS Version ${{ env.VERSION }}
           files: |
-            PVIHK-v2.0.${{ env.BUILD_NUMBER }}.dmg
+            PVIHK-${{ env.VERSION }}.dmg
             release/README_mac.txt
 
         env:
