@@ -31,9 +31,7 @@ jobs:
       - name: Lese Version aus build.py
         id: get_version
         run: |
-          echo "Installiere Abhängigkeiten (falls nötig)..."
-          pip install .  # oder nur: pip install build.py falls lokal
-          echo "version=$(python3 -c 'from build import get_version; print(get_version(False))')" >> $GITHUB_OUTPUT
+          echo "version=$(PYTHONPATH=. python3 -c 'from build import get_version; print(get_version(False))')" >> $GITHUB_OUTPUT
 
       - name: Brich ab, wenn Plattform für Release-Tag schon veröffentlicht wurde
         env:
