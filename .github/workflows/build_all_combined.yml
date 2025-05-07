@@ -142,7 +142,7 @@ jobs:
       - name: Check if EXEs were built
         shell: pwsh
         run: |
-          $version = "v2.0.$env:BUILD_NUMBER"
+          $version = $env:VERSION
           $setupPath = "dist/PVIHK-$version`_setup.exe"
           if (!(Test-Path "dist/pvihk.exe")) {
             throw "pvihk.exe not found"
@@ -151,18 +151,20 @@ jobs:
             throw "$setupPath not found"
           }
 
+
       - name: Create GitHub Release with versioned installer
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v2.0.${{ env.BUILD_NUMBER }}
-          name: Release v2.0.${{ env.BUILD_NUMBER }}
-          body: Version 2.0.${{ env.BUILD_NUMBER }}
+          tag_name: v${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
+          body: Version ${{ env.VERSION }}
           files: |
             dist/pvihk.exe
-            dist/PVIHK-v2.0.${{ env.BUILD_NUMBER }}_setup.exe
+            dist/PVIHK-${{ env.VERSION }}_setup.exe
             release/README_windows.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
 
 
