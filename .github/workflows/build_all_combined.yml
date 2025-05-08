@@ -235,8 +235,6 @@ jobs:
           path: |
             PVIHK-${{ env.VERSION }}.dmg
             release/README_mac.txt
-          
-
 
   release:
     name: Release-Erstellung (zentral)
@@ -265,26 +263,34 @@ jobs:
 
       - name: Abbruch, wenn Assets mit gleicher Version bereits vorhanden sind
         run: |
-          echo "🔍 Überprüfe, ob Assets bereits existieren für v${{ env.VERSION }}"
-          assets=$(gh release view "v${{ env.VERSION }}" --json assets -q '.assets[].name')
-      
-          check_asset() {
-            if echo "$assets" | grep -q "$1"; then
-              echo "❌ Asset '$1' ist bereits im Release vorhanden."
-              found=true
-            fi
-          }
+          echo "🔍 Prüfe Release v${{ env.VERSION }} auf vorhandene Dateien..."
+          assets=$(gh release view "v${{ env.VERSION }}" --json assets -q '.assets[].name' 2>/dev/null || echo "")
       
           found=false
-          check_asset "pvihk.exe"
-          check_asset "PVIHK-${{ env.VERSION }}_setup.exe"
-          check_asset "PVIHK-${{ env.VERSION }}.dmg"
+      
+          if [[ "${{ github.event.inputs.target }}" == "windows" || "${{ github.event.inputs.target }}" == "both" ]]; then
+            if echo "$assets" | grep -q "pvihk.exe"; then
+              echo "❌ Windows-Datei 'pvihk.exe' ist bereits im Release."
+              found=true
+            fi
+            if echo "$assets" | grep -q "PVIHK-${{ env.VERSION }}_setup.exe"; then
+              echo "❌ Windows-Installer ist bereits im Release."
+              found=true
+            fi
+          fi
+      
+          if [[ "${{ github.event.inputs.target }}" == "macos" || "${{ github.event.inputs.target }}" == "both" ]]; then
+            if echo "$assets" | grep -q "PVIHK-${{ env.VERSION }}.dmg"; then
+              echo "❌ macOS-Datei ist bereits im Release."
+              found=true
+            fi
+          fi
       
           if [ "$found" = true ]; then
-            echo "🚫 Abbruch: Release-Assets bereits vorhanden. Bitte Versionsnummer erhöhen."
+            echo "🚫 Release-Dateien existieren bereits – bitte Versionsnummer erhöhen oder Zielplattform wechseln."
             exit 1
           else
-            echo "✅ Keine Konflikte gefunden – Release-Upload wird fortgesetzt."
+            echo "✅ Keine Konflikte – Upload wird fortgesetzt."
           fi
 
       - name: Erzeuge oder aktualisiere Release mit vorhandenen Dateien
