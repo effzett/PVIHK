@@ -200,7 +200,7 @@ jobs:
             --hidden-import=pulp \
             --add-data "$(python -c 'import pulp, os; print(os.path.dirname(pulp.__file__))'):pulp" \
             --add-data "build_number.txt:." \
-            --add-data "build_date.txt;." \
+            --add-data "build_date.txt:." \
             pvihk.py
 
       - name: Prepare content for DMG
