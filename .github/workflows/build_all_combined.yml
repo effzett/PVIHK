@@ -257,13 +257,15 @@ jobs:
       - name: Zeige Inhalt von dist
         run: ls -R dist
 
-      - name: Überprüfe, ob Release-Assets schon existieren
+      - name: Zeige vorhandene Release-Assets (optional)
         run: |
-          gh release view "v${{ env.VERSION }}" --json assets -q '.assets[].name'
+          echo "🔎 Prüfe, ob Release v${{ env.VERSION }} bereits existiert:"
+          gh release view "v${{ env.VERSION }}" --json assets -q '.assets[].name' || echo "ℹ️ Noch kein Release vorhanden – vermutlich erster Lauf."
+
 
       - name: Abbruch, wenn Assets mit gleicher Version bereits vorhanden sind
         run: |
-          echo "🔍 Prüfe Release v${{ env.VERSION }} auf vorhandene Dateien..."
+          echo "🔍 Überprüfe, ob Plattform-Dateien bereits hochgeladen wurden..."
           assets=$(gh release view "v${{ env.VERSION }}" --json assets -q '.assets[].name' 2>/dev/null || echo "")
       
           found=false
@@ -287,7 +289,7 @@ jobs:
           fi
       
           if [ "$found" = true ]; then
-            echo "🚫 Release-Dateien existieren bereits – bitte Versionsnummer erhöhen oder Zielplattform wechseln."
+            echo "🚫 Abbruch: Diese Plattform-Dateien wurden bereits veröffentlicht. Bitte Versionsnummer erhöhen oder Zielplattform wechseln."
             exit 1
           else
             echo "✅ Keine Konflikte – Upload wird fortgesetzt."
