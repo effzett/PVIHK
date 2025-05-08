@@ -263,6 +263,30 @@ jobs:
         run: |
           gh release view "v${{ env.VERSION }}" --json assets -q '.assets[].name'
 
+      - name: Abbruch, wenn Assets mit gleicher Version bereits vorhanden sind
+        run: |
+          echo "🔍 Überprüfe, ob Assets bereits existieren für v${{ env.VERSION }}"
+          assets=$(gh release view "v${{ env.VERSION }}" --json assets -q '.assets[].name')
+      
+          check_asset() {
+            if echo "$assets" | grep -q "$1"; then
+              echo "❌ Asset '$1' ist bereits im Release vorhanden."
+              found=true
+            fi
+          }
+      
+          found=false
+          check_asset "pvihk.exe"
+          check_asset "PVIHK-${{ env.VERSION }}_setup.exe"
+          check_asset "PVIHK-${{ env.VERSION }}.dmg"
+      
+          if [ "$found" = true ]; then
+            echo "🚫 Abbruch: Release-Assets bereits vorhanden. Bitte Versionsnummer erhöhen."
+            exit 1
+          else
+            echo "✅ Keine Konflikte gefunden – Release-Upload wird fortgesetzt."
+          fi
+
       - name: Erzeuge oder aktualisiere Release mit vorhandenen Dateien
         uses: softprops/action-gh-release@v1
         with:
