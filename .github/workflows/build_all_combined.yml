@@ -28,10 +28,10 @@ jobs:
         id: get_number
         run: echo "build_number=$(cat build_number.txt)" >> $GITHUB_OUTPUT
 
-      - name: Lese Version aus build.py
+      - name: Lese Version aus versioning.py
         id: get_version
         run: |
-          echo "version=$(PYTHONPATH=. python3 -c 'from build import get_version; print(get_version())')" >> $GITHUB_OUTPUT
+          echo "version=$(PYTHONPATH=. python3 -c 'from versioning import get_app_metadata; print(get_app_metadata(increment=False)["VERSION"])')" >> $GITHUB_OUTPUT
 
       - name: Brich ab, wenn Plattform für Release-Tag schon veröffentlicht wurde
         env:
@@ -117,6 +117,7 @@ jobs:
             --hidden-import=pulp \
             --add-data "${{ steps.find_pulp.outputs.pulp-path }};pulp" \
             --add-data "build_number.txt;." \
+            --add-data "build_date.txt;." \
             --add-binary "assets/cbc.exe;." \
             --collect-submodules PySide6 \
             --collect-data PySide6 \
@@ -199,6 +200,7 @@ jobs:
             --hidden-import=pulp \
             --add-data "$(python -c 'import pulp, os; print(os.path.dirname(pulp.__file__))'):pulp" \
             --add-data "build_number.txt:." \
+            --add-data "build_date.txt;." \
             pvihk.py
 
       - name: Prepare content for DMG

@@ -17,10 +17,15 @@ from datetime import datetime
 from fpdf import FPDF
 
 from pathlib import Path
-from config import (
-    APP_NAME, COPYRIGHT,TITLEVERSION,
-    VERSION, DATE, WINDOWTITLE
-)
+
+from versioning import get_app_metadata
+meta = get_app_metadata(increment=True)
+VERSION = meta["VERSION"]
+DATE = meta["DATE"]
+TITLEVERSION = meta["TITLEVERSION"]
+WINDOWTITLE = meta["WINDOWTITLE"]
+APPNAME = meta["APPNAME"]
+COPYRIGHT = meta["COPYRIGHT"]
 
 from  MainWindow import Ui_MainWindow
 from preferencesDialog import PreferencesDialog
@@ -975,7 +980,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         QMessageBox.about(
             self,
             WINDOWTITLE,
-            f"{APP_NAME}\nPrüfungs- und Korrektorenverteilung\n"
+            f"{APPNAME}\nPrüfungs- und Korrektorenverteilung\n"
             f"{VERSION}\nvom {DATE}\n{COPYRIGHT}"
         )
 
