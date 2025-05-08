@@ -241,11 +241,12 @@ jobs:
   release:
     name: Release-Erstellung (zentral)
     runs-on: ubuntu-latest
-    needs: [build-windows, build-macos]
+    needs: [init, build-windows, build-macos]
     if: ${{ always() }}
     env:
       VERSION: ${{ needs.init.outputs.version }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
