@@ -31,16 +31,16 @@ jobs:
       - name: Lese Version aus build.py
         id: get_version
         run: |
-          echo "version=$(PYTHONPATH=. python3 -c 'from build import get_version; print(get_version(False))')" >> $GITHUB_OUTPUT
+          echo "version=$(PYTHONPATH=. python3 -c 'from build import get_version; print(get_version())')" >> $GITHUB_OUTPUT
 
       - name: Brich ab, wenn Plattform für Release-Tag schon veröffentlicht wurde
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          tag="v2.0.${{ steps.get_number.outputs.build_number }}"
+          tag="v${{ steps.get_version.outputs.version }}"
           target="${{ github.event.inputs.target }}"
 
-          echo "Überprüfe Release-Tag: $tag für Zielplattform: $target"
+          echo "🔍 Überprüfe Release-Tag: $tag für Zielplattform: $target"
 
           if ! gh release view "$tag" > /dev/null 2>&1; then
             echo "✅ Release $tag existiert noch nicht – alles ok."
@@ -76,9 +76,6 @@ jobs:
       BUILD_NUMBER: ${{ needs.init.outputs.build_number }}
       VERSION: ${{ needs.init.outputs.version }}
     steps:
-      - name: Hier kommen deine Windows-Build-Schritte rein
-        run: echo "Würde jetzt Windows-Build für $env:BUILD_NUMBER machen"
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -175,9 +172,6 @@ jobs:
       VERSION: ${{ needs.init.outputs.version }}
 
     steps:
-      - name: Hier kommen deine macOS-Build-Schritte rein
-        run: echo "Würde jetzt macOS-Build für $BUILD_NUMBER machen"
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
