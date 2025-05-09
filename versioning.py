@@ -16,7 +16,9 @@ def is_frozen():
     return getattr(sys, 'frozen', False)
 
 def get_base_path():
-    return os.path.dirname(sys.executable) if is_frozen() else os.path.dirname(os.path.abspath(__file__))
+    if getattr(sys, 'frozen', False):
+        return sys._MEIPASS
+    return os.path.dirname(os.path.abspath(__file__))
 
 # --- Pfade für Versions- und Datumsdateien ---
 
